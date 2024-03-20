@@ -53,8 +53,12 @@ public struct AgentData
     public float boatDistanceFactor;
     public float enemyWeight;
     public float enemyDistanceFactor;
+    public float navyWeight;
+    public float navyDistanceFactor;
 
-    public AgentData(int steps, int rayRadius, float sight, float movingSpeed, Vector2 randomDirectionValue, float boxWeight, float distanceFactor, float boatWeight, float boatDistanceFactor, float enemyWeight, float enemyDistanceFactor)
+    public AgentData(int steps, int rayRadius, float sight, float movingSpeed, Vector2 randomDirectionValue, float boxWeight,
+        float distanceFactor, float boatWeight, float boatDistanceFactor, float enemyWeight, float enemyDistanceFactor,
+        float navyWeight, float navyDistanceFactor)
     {
         this.steps = steps;
         this.rayRadius = rayRadius;
@@ -67,6 +71,8 @@ public struct AgentData
         this.boatDistanceFactor = boatDistanceFactor;
         this.enemyWeight = enemyWeight;
         this.enemyDistanceFactor = enemyDistanceFactor;
+        this.navyWeight = navyWeight;
+        this.navyDistanceFactor = navyDistanceFactor;
     }
 }
 
@@ -112,6 +118,10 @@ public class AgentLogic : MonoBehaviour, IComparable
     private float enemyWeight;
     [SerializeField]
     private float enemyDistanceFactor;
+    [SerializeField]
+    private float navyWeight;
+    [SerializeField]
+    private float navyDistanceFactor;
 
     [Space(10)]
     [Header("Debug & Help")] 
@@ -166,6 +176,8 @@ public class AgentLogic : MonoBehaviour, IComparable
         boatDistanceFactor = parent.boatDistanceFactor;
         enemyWeight = parent.enemyWeight;
         enemyDistanceFactor = parent.enemyDistanceFactor;
+        navyWeight = parent.navyWeight;
+        navyDistanceFactor = parent.navyDistanceFactor;
     }
 
     /// <summary>
@@ -239,6 +251,14 @@ public class AgentLogic : MonoBehaviour, IComparable
         if (Random.Range(0.0f, 100.0f) <= mutationChance)
         {
             enemyDistanceFactor += Random.Range(-mutationFactor, +mutationFactor);
+        }
+        if (Random.Range(0.0f, 100.0f) <= mutationChance)
+        {
+            navyWeight += Random.Range(-mutationFactor, +mutationFactor);
+        }
+        if (Random.Range(0.0f, 100.0f) <= mutationChance)
+        {
+            navyDistanceFactor += Random.Range(-mutationFactor, +mutationFactor);
         }
     }
 
@@ -398,6 +418,8 @@ public class AgentLogic : MonoBehaviour, IComparable
     /// <returns></returns>
     public AgentData GetData()
     {
-        return new AgentData(steps, rayRadius, sight, movingSpeed, randomDirectionValue, boxWeight, distanceFactor, boatWeight, boatDistanceFactor, enemyWeight,  enemyDistanceFactor);
+        return new AgentData(steps, rayRadius, sight, movingSpeed, randomDirectionValue, boxWeight,
+            distanceFactor, boatWeight, boatDistanceFactor, enemyWeight,  enemyDistanceFactor, 
+            navyWeight, navyDistanceFactor);
     }
 }
