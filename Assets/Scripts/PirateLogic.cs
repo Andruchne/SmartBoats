@@ -8,13 +8,19 @@ public class PirateLogic : AgentLogic
     private static float _boxPoints = 0.1f;
     private static float _boatPoints = 5.0f;
     #endregion
-    
+
     private void OnTriggerEnter(Collider other)
     {
         if(other.gameObject.tag.Equals("Box"))
         {
-            points += _boxPoints;
+            pointsGathered += _boxPoints;
             Destroy(other.gameObject);
+        }
+        else if (other.gameObject.tag.Equals("BoatPoint"))
+        {
+            // Checkpoint reached...
+            pointsSaved += pointsGathered;
+            pointsGathered = 0;
         }
     }
 
@@ -22,7 +28,7 @@ public class PirateLogic : AgentLogic
     {
         if(other.gameObject.tag.Equals("Boat"))
         {
-            points += _boatPoints;
+            pointsGathered += _boatPoints;
             Destroy(other.gameObject);
         }
     }

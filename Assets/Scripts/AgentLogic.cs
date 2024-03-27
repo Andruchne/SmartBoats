@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -56,9 +57,14 @@ public struct AgentData
     public float navyWeight;
     public float navyDistanceFactor;
 
+    // Point where agent can save points...
+    public Vector3 checkpoint;
+    public float checkpointWeight;
+    public float checkpointDistanceFactor;
+
     public AgentData(int steps, int rayRadius, float sight, float movingSpeed, Vector2 randomDirectionValue, float boxWeight,
         float distanceFactor, float boatWeight, float boatDistanceFactor, float enemyWeight, float enemyDistanceFactor,
-        float navyWeight, float navyDistanceFactor)
+        float navyWeight, float navyDistanceFactor, Vector3 checkpoint, float checkpointWeight, float checkpointDistanceFactor)
     {
         this.steps = steps;
         this.rayRadius = rayRadius;
@@ -73,6 +79,10 @@ public struct AgentData
         this.enemyDistanceFactor = enemyDistanceFactor;
         this.navyWeight = navyWeight;
         this.navyDistanceFactor = navyDistanceFactor;
+
+        this.checkpoint = checkpoint;
+        this.checkpointWeight = checkpointWeight;
+        this.checkpointDistanceFactor = checkpointDistanceFactor;
     }
 }
 
@@ -88,7 +98,9 @@ public class AgentLogic : MonoBehaviour, IComparable
     private Rigidbody _rigidbody;
     
     [SerializeField]
-    protected float points;
+    protected float pointsGathered;
+    [SerializeField]
+    protected float pointsSaved;
 
     private bool _isAwake;
 
@@ -122,6 +134,12 @@ public class AgentLogic : MonoBehaviour, IComparable
     private float navyWeight;
     [SerializeField]
     private float navyDistanceFactor;
+    [SerializeField]
+    private Vector3 checkpoint;
+    [SerializeField]
+    private float checkpointWeight;
+    [SerializeField]
+    private float checkpointDistanceFactor;
 
     [Space(10)]
     [Header("Debug & Help")] 
@@ -154,7 +172,8 @@ public class AgentLogic : MonoBehaviour, IComparable
     /// </summary>
     private void Initiate()
     {
-        points = 0;
+        pointsGathered = 0;
+        pointsSaved = 0;
         steps = 360 / rayRadius;
         _rigidbody = GetComponent<Rigidbody>();
     }
@@ -178,6 +197,7 @@ public class AgentLogic : MonoBehaviour, IComparable
         enemyDistanceFactor = parent.enemyDistanceFactor;
         navyWeight = parent.navyWeight;
         navyDistanceFactor = parent.navyDistanceFactor;
+        checkpoint = parent.checkpoint;
     }
 
     /// <summary>
@@ -301,6 +321,14 @@ public class AgentLogic : MonoBehaviour, IComparable
         //Adds an extra direction for the front view with a extra range.
         directions.Add(CalculateAgentDirection(selfPosition, forward, 1.5f));
 
+        //Add the checkpoint to the directions for continuous check.
+        float checkpointDistance = (checkpoint - selfTransform.position).magnitude;
+
+        float checkpointUtility = checkpointDistance * checkpointDistanceFactor + checkpointWeight * (pointsGathered / 10);
+        AgentDirection checkPointDirection = new AgentDirection(checkpoint, checkpointDistanceFactor);
+        checkPointDirection.utility = checkpointUtility;
+        directions.Add(checkPointDirection);
+
         directions.Sort();
         //There is a (100 - _maxUtilityChoiceChance) chance of using the second best option instead of the highest one. Should help into ambiguous situation.
         AgentDirection highestAgentDirection = directions[Random.Range(0.0f, 100.0f) <= _maxUtilityChoiceChance ? 0 : 1];
@@ -389,7 +417,7 @@ public class AgentLogic : MonoBehaviour, IComparable
 
     public float GetPoints()
     {
-        return points;
+        return pointsSaved;
     }
     
     /// <summary>
@@ -420,6 +448,6 @@ public class AgentLogic : MonoBehaviour, IComparable
     {
         return new AgentData(steps, rayRadius, sight, movingSpeed, randomDirectionValue, boxWeight,
             distanceFactor, boatWeight, boatDistanceFactor, enemyWeight,  enemyDistanceFactor, 
-            navyWeight, navyDistanceFactor);
+            navyWeight, navyDistanceFactor, checkpoint, checkpointWeight, checkpointDistanceFactor);
     }
 }

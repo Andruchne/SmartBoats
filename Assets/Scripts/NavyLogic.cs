@@ -13,7 +13,7 @@ public class NavyLogic : AgentLogic
     {
         if (other.gameObject.tag.Equals("Box"))
         {
-            points += _boxPoints;
+            pointsGathered += _boxPoints;
             Destroy(other.gameObject);
         }
     }
@@ -22,7 +22,7 @@ public class NavyLogic : AgentLogic
     {
         if (other.gameObject.tag.Equals("Enemy"))
         {
-            points += _piratePoints;
+            pointsGathered += _piratePoints;
             Destroy(other.gameObject);
         }
     }

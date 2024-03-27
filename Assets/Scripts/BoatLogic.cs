@@ -13,8 +13,14 @@ public class BoatLogic : AgentLogic
     {
         if(other.gameObject.tag.Equals("Box"))
         {
-            points += _boxPoints;
+            pointsGathered += _boxPoints;
             Destroy(other.gameObject);
+        }
+        else if(other.gameObject.tag.Equals("BoatPoint"))
+        {
+            // Checkpoint reached...
+            pointsSaved += pointsGathered;
+            pointsGathered = 0;
         }
     }
     
@@ -24,7 +30,7 @@ public class BoatLogic : AgentLogic
         {
             //This is a safe-fail mechanism. In case something goes wrong and the Boat is not destroyed after touching
             //a pirate, it also gets a massive negative number of points.
-            points += _piratePoints;
+            pointsGathered += _piratePoints;
         }
     }
 }
