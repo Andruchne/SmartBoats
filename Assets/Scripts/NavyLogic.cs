@@ -16,6 +16,12 @@ public class NavyLogic : AgentLogic
             pointsGathered += _boxPoints;
             Destroy(other.gameObject);
         }
+        else if (other.gameObject.tag.Equals("BoatPoint"))
+        {
+            // Checkpoint reached...
+            pointsSaved += pointsGathered;
+            pointsGathered = 0;
+        }
     }
 
     private void OnCollisionEnter(Collision other)

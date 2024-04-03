@@ -75,12 +75,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac962a5b50ed44584b65086c49fa5d65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  show: 0
   pointsGathered: 0
   pointsSaved: 0
   steps: 0
   rayRadius: 16
   sight: 30
-  movingSpeed: 5
+  movingSpeed: 9
   randomDirectionValue: {x: -1, y: 1}
   boxWeight: 1
   distanceFactor: 1
@@ -90,10 +91,11 @@ MonoBehaviour:
   enemyDistanceFactor: -1
   navyWeight: 0.1
   navyDistanceFactor: 0.1
-  checkpoint: {x: -8.37574, y: -2.8, z: -450.58002}
+  checkpoint: {x: 0, y: 0, z: 201.28001}
   checkpointWeight: 1
   checkpointDistanceFactor: 1
-  visionColor: {r: 0.21466713, g: 0.29546288, b: 0.6792453, a: 1}
+  pointsWeight: 1
+  visionColor: {r: 0.21568628, g: 0.6784314, b: 0.27661493, a: 1}
   foundColor: {r: 0.59033465, g: 0.59780955, b: 0.6226415, a: 1}
   directionColor: {r: 0.4433962, g: 0.39784816, b: 0.10666606, a: 1}
   debug: 1

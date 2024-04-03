@@ -14,6 +14,8 @@ public class GenerationManager : MonoBehaviour
     private GenerateObjectsInArea boatGenerator;
     [SerializeField]
     private GenerateObjectsInArea pirateGenerator;
+    [SerializeField]
+    private GenerateObjectsInArea navyGenerator;
 
     [Space(10)]
     [Header("Parenting and Mutation")]
@@ -25,6 +27,8 @@ public class GenerationManager : MonoBehaviour
     private int boatParentSize;
     [SerializeField] 
     private int pirateParentSize;
+    [SerializeField]
+    private int navyParentSize;
 
     [Space(10)] 
     [Header("Simulation Controls")]
@@ -50,12 +54,16 @@ public class GenerationManager : MonoBehaviour
     private AgentData lastBoatWinnerData;
     [SerializeField]
     private AgentData lastPirateWinnerData;
+    [SerializeField]
+    private AgentData lastNavyWinnerData;
 
     private bool _runningSimulation;
     private List<BoatLogic> _activeBoats;
     private List<PirateLogic> _activePirates;
+    private List<NavyLogic> _activeNavy;
     private BoatLogic[] _boatParents;
     private PirateLogic[] _pirateParents;
+    private NavyLogic[] _navyParents;
 
     private void Awake()
     {
@@ -104,10 +112,11 @@ public class GenerationManager : MonoBehaviour
      /// </summary>
      /// <param name="boatParents"></param>
      /// <param name="pirateParents"></param>
-    public void GenerateObjects(BoatLogic[] boatParents = null, PirateLogic[] pirateParents = null)
+    public void GenerateObjects(BoatLogic[] boatParents = null, PirateLogic[] pirateParents = null, NavyLogic[] navyParents = null)
     {
         GenerateBoats(boatParents);
         GeneratePirates(pirateParents);
+        GenerateNavy(navyParents);
     }
 
      /// <summary>
@@ -166,12 +175,44 @@ public class GenerationManager : MonoBehaviour
         }
     }
 
-     /// <summary>
-     /// Creates a new generation by using GenerateBoxes and GenerateBoats/Pirates.
-     /// Previous generations will be removed and the best parents will be selected and used to create the new generation.
-     /// The best parents (top 1) of the generation will be stored as a Prefab in the [savePrefabsAt] folder. Their name
-     /// will use the [generationCount] as an identifier.
-     /// </summary>
+
+
+    /// <summary>
+    /// Generates the list of navys using the parents list. The parent list can be null and, if so, it will be ignored.
+    /// Newly created navys will go under mutation (MutationChances and MutationFactor will be applied).
+    /// Newly create agents will be Awaken (calling AwakeUp()).
+    /// </summary>
+    /// <param name="navyParents"></param>
+    private void GenerateNavy(NavyLogic[] navyParents)
+    {
+        _activeNavy = new List<NavyLogic>();
+        List<GameObject> objects = navyGenerator.RegenerateObjects();
+        foreach (GameObject obj in objects)
+        {
+            NavyLogic navy = obj.GetComponent<NavyLogic>();
+            if (navy != null)
+            {
+                _activeNavy.Add(navy);
+                if (navyParents != null)
+                {
+                    NavyLogic navyParent = navyParents[Random.Range(0, navyParents.Length)];
+                    navy.Birth(navyParent.GetData());
+                }
+
+                navy.Mutate(mutationFactor, mutationChance);
+                navy.AwakeUp();
+            }
+        }
+    }
+
+
+
+    /// <summary>
+    /// Creates a new generation by using GenerateBoxes and GenerateBoats/Pirates.
+    /// Previous generations will be removed and the best parents will be selected and used to create the new generation.
+    /// The best parents (top 1) of the generation will be stored as a Prefab in the [savePrefabsAt] folder. Their name
+    /// will use the [generationCount] as an identifier.
+    /// </summary>
     public void MakeNewGeneration()
     {
         Random.InitState(6);
@@ -208,11 +249,26 @@ public class GenerationManager : MonoBehaviour
         lastPirateWinner.name += "Gen-" + generationCount; 
         lastPirateWinnerData = lastPirateWinner.GetData();
         PrefabUtility.SaveAsPrefabAsset(lastPirateWinner.gameObject, savePrefabsAt + lastPirateWinner.name + ".prefab");
-        
+
+        _activeNavy.RemoveAll(item => item == null);
+        _activeNavy.Sort();
+        _navyParents = new NavyLogic[navyParentSize];
+        for (int i = 0; i < navyParentSize; i++)
+        {
+            _navyParents[i] = _activeNavy[i];
+        }
+
+        NavyLogic lastNavyWinner = _activeNavy[0];
+        lastNavyWinner.name += "Gen-" + generationCount;
+        lastNavyWinnerData = lastNavyWinner.GetData();
+        PrefabUtility.SaveAsPrefabAsset(lastNavyWinner.gameObject, savePrefabsAt + lastNavyWinner.name + ".prefab");
+
         //Winners:
-        Debug.Log("Last winner boat had: " + lastBoatWinner.GetPoints() + " points!" + " Last winner pirate had: " + lastPirateWinner.GetPoints() + " points!");
+        Debug.Log("Last winner boat had: " + lastBoatWinner.GetPoints() + " points!" + 
+            " Last winner pirate had: " + lastPirateWinner.GetPoints() + " points!" +
+            " Last winner navy had: " + lastNavyWinner.GetPoints() + " points");
         
-        GenerateObjects(_boatParents, _pirateParents);
+        GenerateObjects(_boatParents, _pirateParents, _navyParents);
     }
 
      /// <summary>
@@ -248,5 +304,6 @@ public class GenerationManager : MonoBehaviour
         _activeBoats.RemoveAll(item => item == null);
         _activeBoats.ForEach(boat => boat.Sleep());
         _activePirates.ForEach(pirate => pirate.Sleep());
+        _activeNavy.ForEach(navy => navy.Sleep());
     }
 }

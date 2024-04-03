@@ -424,13 +424,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4df1f3fb5d7d0fa48860ae145dc7aa0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  show: 0
   pointsGathered: 0
   pointsSaved: 0
   steps: 0
   rayRadius: 16
   sight: 30
-  movingSpeed: 5
-  randomDirectionValue: {x: 0, y: 0}
+  movingSpeed: 9
+  randomDirectionValue: {x: -1, y: 1}
   boxWeight: 0
   distanceFactor: 0
   boatWeight: 1
@@ -439,13 +440,14 @@ MonoBehaviour:
   enemyDistanceFactor: 2
   navyWeight: 0
   navyDistanceFactor: 0
-  checkpoint: {x: -8.37574, y: -2.8, z: -450.58002}
-  checkpointWeight: 0
-  checkpointDistanceFactor: 0
-  visionColor: {r: 0, g: 0, b: 0, a: 0}
+  checkpoint: {x: 0, y: 0, z: 201.28001}
+  checkpointWeight: 1
+  checkpointDistanceFactor: 1
+  pointsWeight: 1
+  visionColor: {r: 0.08597367, g: 0.21904607, b: 0.7924528, a: 0}
   foundColor: {r: 0, g: 0, b: 0, a: 0}
-  directionColor: {r: 0, g: 0, b: 0, a: 0}
-  debug: 0
+  directionColor: {r: 1, g: 1, b: 1, a: 0}
+  debug: 1
 --- !u!1 &8112030755917027596
 GameObject:
   m_ObjectHideFlags: 0

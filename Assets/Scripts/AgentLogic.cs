@@ -61,10 +61,12 @@ public struct AgentData
     public Vector3 checkpoint;
     public float checkpointWeight;
     public float checkpointDistanceFactor;
+    public float pointsWeight;
 
     public AgentData(int steps, int rayRadius, float sight, float movingSpeed, Vector2 randomDirectionValue, float boxWeight,
         float distanceFactor, float boatWeight, float boatDistanceFactor, float enemyWeight, float enemyDistanceFactor,
-        float navyWeight, float navyDistanceFactor, Vector3 checkpoint, float checkpointWeight, float checkpointDistanceFactor)
+        float navyWeight, float navyDistanceFactor, Vector3 checkpoint, float checkpointWeight, float checkpointDistanceFactor,
+        float pointsWeight)
     {
         this.steps = steps;
         this.rayRadius = rayRadius;
@@ -83,6 +85,7 @@ public struct AgentData
         this.checkpoint = checkpoint;
         this.checkpointWeight = checkpointWeight;
         this.checkpointDistanceFactor = checkpointDistanceFactor;
+        this.pointsWeight = pointsWeight;
     }
 }
 
@@ -94,6 +97,8 @@ public struct AgentData
 [RequireComponent(typeof(Rigidbody))]
 public class AgentLogic : MonoBehaviour, IComparable
 {
+    public bool show;
+
     private Vector3 _movingDirection;
     private Rigidbody _rigidbody;
     
@@ -140,6 +145,8 @@ public class AgentLogic : MonoBehaviour, IComparable
     private float checkpointWeight;
     [SerializeField]
     private float checkpointDistanceFactor;
+    [SerializeField]
+    private float pointsWeight;
 
     [Space(10)]
     [Header("Debug & Help")] 
@@ -280,6 +287,18 @@ public class AgentLogic : MonoBehaviour, IComparable
         {
             navyDistanceFactor += Random.Range(-mutationFactor, +mutationFactor);
         }
+        if (Random.Range(0.0f, 100.0f) <= mutationChance)
+        {
+            checkpointDistanceFactor += Random.Range(-mutationFactor, +mutationFactor);
+        }
+        if (Random.Range(0.0f, 100.0f) <= mutationChance)
+        {
+            checkpointWeight += Random.Range(-mutationFactor, +mutationFactor);
+        }
+        if (Random.Range(0.0f, 100.0f) <= mutationChance)
+        {
+            pointsWeight += Random.Range(-mutationFactor, +mutationFactor);
+        }
     }
 
     private void Update()
@@ -322,16 +341,36 @@ public class AgentLogic : MonoBehaviour, IComparable
         directions.Add(CalculateAgentDirection(selfPosition, forward, 1.5f));
 
         //Add the checkpoint to the directions for continuous check.
-        float checkpointDistance = (checkpoint - selfTransform.position).magnitude;
+        Vector3 checkpointDirection = checkpoint - selfTransform.position;
 
-        float checkpointUtility = checkpointDistance * checkpointDistanceFactor + checkpointWeight * (pointsGathered / 10);
-        AgentDirection checkPointDirection = new AgentDirection(checkpoint, checkpointDistanceFactor);
-        checkPointDirection.utility = checkpointUtility;
-        directions.Add(checkPointDirection);
+        float lerpParam = Mathf.InverseLerp(300, 0, checkpointDirection.magnitude);
+        float distanceIndex = Mathf.Lerp(0.1f, 1, lerpParam);
+
+        if (show) Debug.Log(distanceIndex);
+
+        float checkpointUtility = (distanceIndex * checkpointDistanceFactor + checkpointWeight) * (pointsGathered * pointsWeight);
+        
+        //if(show) Debug.Log(checkpointUtility);
+
+        AgentDirection checkpointAgentDir = new AgentDirection(checkpointDirection.normalized, checkpointDistanceFactor);
+        checkpointAgentDir.utility = checkpointUtility;
+        directions.Add(checkpointAgentDir);
 
         directions.Sort();
         //There is a (100 - _maxUtilityChoiceChance) chance of using the second best option instead of the highest one. Should help into ambiguous situation.
-        AgentDirection highestAgentDirection = directions[Random.Range(0.0f, 100.0f) <= _maxUtilityChoiceChance ? 0 : 1];
+        int directionChoice = 0;
+        float randomChoice = Random.Range(0.0f, 100.0f);
+        if (randomChoice <= _maxUtilityChoiceChance)
+        {
+            directionChoice = 0;
+        }
+        else if (randomChoice > _maxUtilityChoiceChance && directions[0].utility - directions[1].utility < 2)
+        {
+            directionChoice = 1;
+        }
+
+        AgentDirection highestAgentDirection = directions[directionChoice];
+        //if (show) Debug.Log(directions[0].utility);
         
         //Rotate towards to direction. The factor of 0.1 helps to create a "rotation" animation instead of automatically rotates towards the target. 
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(highestAgentDirection.Direction), 0.1f);
@@ -448,6 +487,7 @@ public class AgentLogic : MonoBehaviour, IComparable
     {
         return new AgentData(steps, rayRadius, sight, movingSpeed, randomDirectionValue, boxWeight,
             distanceFactor, boatWeight, boatDistanceFactor, enemyWeight,  enemyDistanceFactor, 
-            navyWeight, navyDistanceFactor, checkpoint, checkpointWeight, checkpointDistanceFactor);
+            navyWeight, navyDistanceFactor, checkpoint, checkpointWeight, checkpointDistanceFactor,
+            pointsWeight);
     }
 }
