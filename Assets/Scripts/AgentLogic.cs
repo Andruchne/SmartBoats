@@ -168,6 +168,9 @@ public class AgentLogic : MonoBehaviour, IComparable
     private static float _sightInfluenceInSpeed = 0.0625f;
     private static float _maxUtilityChoiceChance = 0.85f;
     #endregion
+
+    // Making this variable global rather than local to draw sphere gizmo on debug...
+    private float debugSightFactor = 1.0f;
     
     private void Awake()
     {
@@ -326,8 +329,11 @@ public class AgentLogic : MonoBehaviour, IComparable
 
         //Initiate the rayDirection on the opposite side of the spectrum.
         Vector3 rayDirection = Quaternion.Euler(0, -1.0f * steps * (rayRadius / 2.0f), 0) * forward;
+
+        //List<AgentDirection> directions = CalculateAgentDirectionSphere(selfPosition);
+
+        //List of AgentDirection (direction + utility) for all the directions. (Raycasts)
         
-        //List of AgentDirection (direction + utility) for all the directions.
         List<AgentDirection> directions = new List<AgentDirection>();
         for (int i = 0; i <= rayRadius; i++)
         {
@@ -337,8 +343,10 @@ public class AgentLogic : MonoBehaviour, IComparable
             //Rotate the rayDirection by _steps every iteration through the entire rayRadius.
             rayDirection = Quaternion.Euler(0, steps, 0) * rayDirection;
         }
+        
+
         //Adds an extra direction for the front view with a extra range.
-        directions.Add(CalculateAgentDirection(selfPosition, forward, 1.5f));
+        //directions.Add(CalculateAgentDirection(selfPosition, forward, 1.5f));
 
         //Add the checkpoint to the directions for continuous check.
         Vector3 checkpointDirection = checkpoint - selfTransform.position;
@@ -384,6 +392,61 @@ public class AgentLogic : MonoBehaviour, IComparable
         }
     }
 
+    private List<AgentDirection> CalculateAgentDirectionSphere(Vector3 selfPosition, float sightFactor = 1.0f)
+    {
+        if (debug)
+        {
+            debugSightFactor = sightFactor;
+        }
+
+        //Calculate a random utility to initiate the AgentDirection.
+        float utility = Random.Range(Mathf.Min(randomDirectionValue.x, randomDirectionValue.y), Mathf.Max(randomDirectionValue.x, randomDirectionValue.y));
+
+        //Create an AgentDirection struct with a random utility value [utility]. Ignores y component.
+        List<AgentDirection> directions = new List<AgentDirection>();
+
+        //The sightFactor is a variable that increases / decreases the size of the ray.
+        //For now, the sightFactor is only used to control the long sight in front of the agent.
+        RaycastHit[] hits = Physics.SphereCastAll(selfPosition, sight * sightFactor, transform.forward, 0.1f);
+        Debug.Log(hits.Length);
+
+        if (hits.Length > 0)
+        {
+            for (int i = 0; i < hits.Length; i++)
+            {
+                //Calculate the normalized distance from the agent to the intersected object.
+                //Closer objects will have distancedNormalized close to 0, and further objects will have it close to 1.
+                float distanceNormalized = (hits[i].distance / (sight * sightFactor));
+
+                //Inverts the distanceNormalized. Closer objects will tend to 1, while further objects will tend to 0.
+                //Thus, closer objects will have a higher value.
+                float distanceIndex = 1.0f - distanceNormalized;
+
+                //Calculate the utility of the found object according to its type.
+                switch (hits[i].collider.gameObject.tag)
+                {
+                    //All formulas are the same. Only the weights change.
+                    case "Box":
+                        utility = distanceIndex * distanceFactor + boxWeight;
+                        break;
+                    case "Boat":
+                        utility = distanceIndex * boatDistanceFactor + boatWeight;
+                        break;
+                    case "Enemy":
+                        utility = distanceIndex * enemyDistanceFactor + enemyWeight;
+                        break;
+                }
+
+                Vector3 moveDirection = hits[i].point - selfPosition;
+                moveDirection.Normalize();
+
+                directions.Add(new AgentDirection(moveDirection, utility));
+            }
+        }
+
+        return directions;
+    }
+
     private AgentDirection CalculateAgentDirection(Vector3 selfPosition, Vector3 rayDirection, float sightFactor = 1.0f)
     {
         if (debug)
@@ -400,6 +463,7 @@ public class AgentLogic : MonoBehaviour, IComparable
         //Raycast into the rayDirection to check if something can be seen in that direction.
         //The sightFactor is a variable that increases / decreases the size of the ray.
         //For now, the sightFactor is only used to control the long sight in front of the agent.
+
         if (Physics.Raycast(selfPosition, rayDirection, out RaycastHit raycastHit, sight * sightFactor))
         {
             if (debug)
@@ -489,5 +553,13 @@ public class AgentLogic : MonoBehaviour, IComparable
             distanceFactor, boatWeight, boatDistanceFactor, enemyWeight,  enemyDistanceFactor, 
             navyWeight, navyDistanceFactor, checkpoint, checkpointWeight, checkpointDistanceFactor,
             pointsWeight);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (debug)
+        {
+            Gizmos.DrawSphere(transform.position, sight * debugSightFactor);
+        }
     }
 }
