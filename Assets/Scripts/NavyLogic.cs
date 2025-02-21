@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -8,6 +9,7 @@ public class NavyLogic : AgentLogic
     private static float _piratePoints = 5.0f;
     #endregion
 
+    /*
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag.Equals("Box"))
@@ -19,16 +21,28 @@ public class NavyLogic : AgentLogic
         {
             // Checkpoint reached...
             pointsSaved += pointsGathered;
-            pointsGathered = 0;
+            gameObject.SetActive(false);
         }
     }
+    */
 
     private void OnCollisionEnter(Collision other)
     {
+        // Here we add the points to saved immediately, to encourage hunting pirates
         if (other.gameObject.tag.Equals("Enemy"))
         {
-            pointsGathered += _piratePoints;
-            Destroy(other.gameObject);
+            pointsSaved += _piratePoints;
+
+            // Make sure to not wipe out all the pirates (It causes issues with generating a new generation otherwise)
+            PirateLogic[] pirates = FindObjectsOfType<PirateLogic>();
+            if (pirates.Length == 1)
+            {
+                other.gameObject.SetActive(false);
+            }
+            else
+            {
+                Destroy(other.gameObject);
+            }
         }
     }
 

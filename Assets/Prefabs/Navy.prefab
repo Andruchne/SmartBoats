@@ -434,19 +434,19 @@ MonoBehaviour:
   randomDirectionValue: {x: -1, y: 1}
   boxWeight: 0
   distanceFactor: 0
-  boatWeight: 1
-  boatDistanceFactor: 1
+  boatWeight: 0.75
+  boatDistanceFactor: 0.75
   enemyWeight: 2
   enemyDistanceFactor: 2
   navyWeight: 0
   navyDistanceFactor: 0
   checkpoint: {x: 0, y: 0, z: 201.28001}
-  checkpointWeight: 1
-  checkpointDistanceFactor: 1
-  pointsWeight: 1
-  visionColor: {r: 0.08597367, g: 0.21904607, b: 0.7924528, a: 0}
-  foundColor: {r: 0, g: 0, b: 0, a: 0}
-  directionColor: {r: 1, g: 1, b: 1, a: 0}
+  checkpointWeight: 0
+  checkpointDistanceFactor: 0
+  pointsWeight: 0
+  visionColor: {r: 0.08597367, g: 0.21904607, b: 0.7924528, a: 1}
+  foundColor: {r: 0, g: 0, b: 0, a: 1}
+  directionColor: {r: 1, g: 1, b: 1, a: 1}
   debug: 1
 --- !u!1 &8112030755917027596
 GameObject:

@@ -20,7 +20,7 @@ public class PirateLogic : AgentLogic
         {
             // Checkpoint reached...
             pointsSaved += pointsGathered;
-            pointsGathered = 0;
+            gameObject.SetActive(false);
         }
     }
 

@@ -168,9 +168,6 @@ public class AgentLogic : MonoBehaviour, IComparable
     private static float _sightInfluenceInSpeed = 0.0625f;
     private static float _maxUtilityChoiceChance = 0.85f;
     #endregion
-
-    // Making this variable global rather than local to draw sphere gizmo on debug...
-    private float debugSightFactor = 1.0f;
     
     private void Awake()
     {
@@ -330,8 +327,6 @@ public class AgentLogic : MonoBehaviour, IComparable
         //Initiate the rayDirection on the opposite side of the spectrum.
         Vector3 rayDirection = Quaternion.Euler(0, -1.0f * steps * (rayRadius / 2.0f), 0) * forward;
 
-        //List<AgentDirection> directions = CalculateAgentDirectionSphere(selfPosition);
-
         //List of AgentDirection (direction + utility) for all the directions. (Raycasts)
         
         List<AgentDirection> directions = new List<AgentDirection>();
@@ -354,15 +349,14 @@ public class AgentLogic : MonoBehaviour, IComparable
         float lerpParam = Mathf.InverseLerp(300, 0, checkpointDirection.magnitude);
         float distanceIndex = Mathf.Lerp(0.1f, 1, lerpParam);
 
-        if (show) Debug.Log(distanceIndex);
-
         float checkpointUtility = (distanceIndex * checkpointDistanceFactor + checkpointWeight) * (pointsGathered * pointsWeight);
-        
-        //if(show) Debug.Log(checkpointUtility);
 
-        AgentDirection checkpointAgentDir = new AgentDirection(checkpointDirection.normalized, checkpointDistanceFactor);
-        checkpointAgentDir.utility = checkpointUtility;
-        directions.Add(checkpointAgentDir);
+        if (checkpointUtility > 0)
+        {
+            AgentDirection checkpointAgentDir = new AgentDirection(checkpointDirection.normalized, checkpointDistanceFactor);
+            checkpointAgentDir.utility = checkpointUtility;
+            directions.Add(checkpointAgentDir);
+        }
 
         directions.Sort();
         //There is a (100 - _maxUtilityChoiceChance) chance of using the second best option instead of the highest one. Should help into ambiguous situation.
@@ -390,61 +384,6 @@ public class AgentLogic : MonoBehaviour, IComparable
         {
             Debug.DrawRay(selfPosition, highestAgentDirection.Direction * (sight * 1.5f), directionColor);
         }
-    }
-
-    private List<AgentDirection> CalculateAgentDirectionSphere(Vector3 selfPosition, float sightFactor = 1.0f)
-    {
-        if (debug)
-        {
-            debugSightFactor = sightFactor;
-        }
-
-        //Calculate a random utility to initiate the AgentDirection.
-        float utility = Random.Range(Mathf.Min(randomDirectionValue.x, randomDirectionValue.y), Mathf.Max(randomDirectionValue.x, randomDirectionValue.y));
-
-        //Create an AgentDirection struct with a random utility value [utility]. Ignores y component.
-        List<AgentDirection> directions = new List<AgentDirection>();
-
-        //The sightFactor is a variable that increases / decreases the size of the ray.
-        //For now, the sightFactor is only used to control the long sight in front of the agent.
-        RaycastHit[] hits = Physics.SphereCastAll(selfPosition, sight * sightFactor, transform.forward, 0.1f);
-        Debug.Log(hits.Length);
-
-        if (hits.Length > 0)
-        {
-            for (int i = 0; i < hits.Length; i++)
-            {
-                //Calculate the normalized distance from the agent to the intersected object.
-                //Closer objects will have distancedNormalized close to 0, and further objects will have it close to 1.
-                float distanceNormalized = (hits[i].distance / (sight * sightFactor));
-
-                //Inverts the distanceNormalized. Closer objects will tend to 1, while further objects will tend to 0.
-                //Thus, closer objects will have a higher value.
-                float distanceIndex = 1.0f - distanceNormalized;
-
-                //Calculate the utility of the found object according to its type.
-                switch (hits[i].collider.gameObject.tag)
-                {
-                    //All formulas are the same. Only the weights change.
-                    case "Box":
-                        utility = distanceIndex * distanceFactor + boxWeight;
-                        break;
-                    case "Boat":
-                        utility = distanceIndex * boatDistanceFactor + boatWeight;
-                        break;
-                    case "Enemy":
-                        utility = distanceIndex * enemyDistanceFactor + enemyWeight;
-                        break;
-                }
-
-                Vector3 moveDirection = hits[i].point - selfPosition;
-                moveDirection.Normalize();
-
-                directions.Add(new AgentDirection(moveDirection, utility));
-            }
-        }
-
-        return directions;
     }
 
     private AgentDirection CalculateAgentDirection(Vector3 selfPosition, Vector3 rayDirection, float sightFactor = 1.0f)
@@ -497,6 +436,31 @@ public class AgentLogic : MonoBehaviour, IComparable
         
         direction.utility = utility;
         return direction;
+    }
+
+    public string GetInfoString()
+    {
+        string info = "";
+
+        info += "Final Points: " + pointsSaved + "\n\n";
+        info += "Steps: " + steps + "\n";
+        info += "Ray Radius: " + rayRadius + "\n";
+        info += "Sight: " + sight + "\n";
+        info += "Moving Speed: " + movingSpeed + "\n";
+        info += "Random Direction Values: " + randomDirectionValue + "\n\n";
+        info += "Box Weight: " + boxWeight + "\n";
+        info += "Box Distance Factor: " + distanceFactor + "\n\n";
+        info += "Boat Weight: " + boatWeight + "\n";
+        info += "Boat Distance Factor: " + boatDistanceFactor + "\n\n";
+        info += "Enemy Weight: " + enemyWeight + "\n";
+        info += "Enemy Distance Factor: " + enemyDistanceFactor + "\n\n";
+        info += "Navy Weight: " + navyWeight + "\n";
+        info += "Navy Distance Factor: " + navyDistanceFactor + "\n\n";
+        info += "Checkpoint Weight: " + checkpointWeight + "\n";
+        info += "Checkpoint Distance Factor: " + checkpointDistanceFactor + "\n";
+        info += "Gathered Points Weight: " + pointsWeight + "\n";
+
+        return info;
     }
 
     /// <summary>
@@ -553,13 +517,5 @@ public class AgentLogic : MonoBehaviour, IComparable
             distanceFactor, boatWeight, boatDistanceFactor, enemyWeight,  enemyDistanceFactor, 
             navyWeight, navyDistanceFactor, checkpoint, checkpointWeight, checkpointDistanceFactor,
             pointsWeight);
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (debug)
-        {
-            Gizmos.DrawSphere(transform.position, sight * debugSightFactor);
-        }
     }
 }

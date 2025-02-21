@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -102,7 +103,33 @@ public class GenerationManager : MonoBehaviour
         }
     }
 
-     
+    private void SetDocumentation(string textfile, string title, string info)
+    {
+        string path = Path.Combine(Application.dataPath, "Docs");
+
+        // Create directory if it doesn't exist
+        if (!Directory.Exists(path)) { Directory.CreateDirectory(path); }
+
+        path = Path.Combine(path, textfile);
+
+        // Create file if it doesn't exist
+        if (!File.Exists(path))
+        {
+            using (StreamWriter writer = new StreamWriter(path)) 
+            {
+                writer.WriteLine(textfile + "\n\n\n");
+            }
+        }
+
+        // Add info
+        using (StreamWriter writer = new StreamWriter(path, true))
+        {
+            writer.WriteLine("______________________________");
+            writer.WriteLine(title + ":\n" + info + "\n\n\n");
+        }
+    }
+
+
     /// <summary>
     /// Generates the boxes on all box areas.
     /// </summary>
@@ -138,6 +165,7 @@ public class GenerationManager : MonoBehaviour
     {
         _activePirates = new List<PirateLogic>();
         List<GameObject> objects = pirateGenerator.RegenerateObjects();
+
         foreach (GameObject obj in objects)
         {
             PirateLogic pirate = obj.GetComponent<PirateLogic>();
@@ -239,39 +267,44 @@ public class GenerationManager : MonoBehaviour
             //Fetch parents
             _activeBoats.RemoveAll(item => item == null);
             _activeBoats.Sort();
-            if (_activeBoats.Count == 0)
-            {
-                GenerateBoats(_boatParents);
-            }
-            _boatParents = new BoatLogic[boatParentSize];
-            for (int i = 0; i < boatParentSize; i++)
-            {
-                _boatParents[i] = _activeBoats[i];
-            }
 
-            lastBoatWinner = _activeBoats[0];
-            lastBoatWinner.name += "Gen-" + generationCount;
-            lastBoatWinnerData = lastBoatWinner.GetData();
-            PrefabUtility.SaveAsPrefabAsset(lastBoatWinner.gameObject, savePrefabsAt + lastBoatWinner.name + ".prefab");
+            if (_activeBoats.Count > 0)
+            {
+                _boatParents = new BoatLogic[boatParentSize];
+                for (int i = 0; i < boatParentSize; i++)
+                {
+                    _boatParents[i] = _activeBoats[0];
+                }
 
-            winnerMessage += $"Last winner boat had: {lastBoatWinner.GetPoints()} points!";        }
+                lastBoatWinner = _activeBoats[0];
+                lastBoatWinner.name += "Gen-" + generationCount;
+                lastBoatWinnerData = lastBoatWinner.GetData();
+                PrefabUtility.SaveAsPrefabAsset(lastBoatWinner.gameObject, savePrefabsAt + lastBoatWinner.name + ".prefab");
+
+                winnerMessage += $"Last winner boat had: {lastBoatWinner.GetPoints()} points!\n";
+                SetDocumentation("BoatInfo", lastBoatWinner.name, lastBoatWinner.GetInfoString());
+            }
+        }
         
         if (evolvePirate)
         {
             _activePirates.RemoveAll(item => item == null);
             _activePirates.Sort();
             _pirateParents = new PirateLogic[pirateParentSize];
-            for (int i = 0; i < pirateParentSize; i++)
+            if (_activePirates.Count > 0)
             {
-                _pirateParents[i] = _activePirates[i];
-            }
+                for (int i = 0; i < pirateParentSize; i++)
+                {
+                    _pirateParents[i] = _activePirates[0];
+                }
+                lastPirateWinner = _activePirates[0];
+                lastPirateWinner.name += "Gen-" + generationCount;
+                lastPirateWinnerData = lastPirateWinner.GetData();
+                PrefabUtility.SaveAsPrefabAsset(lastPirateWinner.gameObject, savePrefabsAt + lastPirateWinner.name + ".prefab");
 
-            lastPirateWinner = _activePirates[0];
-            lastPirateWinner.name += "Gen-" + generationCount;
-            lastPirateWinnerData = lastPirateWinner.GetData();
-            PrefabUtility.SaveAsPrefabAsset(lastPirateWinner.gameObject, savePrefabsAt + lastPirateWinner.name + ".prefab");
-
-            winnerMessage += $"Last winner pirate had: {lastPirateWinner.GetPoints()}  points!";
+                winnerMessage += $"Last winner pirate had: {lastPirateWinner.GetPoints()}  points!\n";
+                SetDocumentation("PirateInfo", lastPirateWinner.name, lastPirateWinner.GetInfoString());
+            } 
         }
 
         if (evolveNavy)
@@ -279,17 +312,21 @@ public class GenerationManager : MonoBehaviour
             _activeNavy.RemoveAll(item => item == null);
             _activeNavy.Sort();
             _navyParents = new NavyLogic[navyParentSize];
-            for (int i = 0; i < navyParentSize; i++)
+            if (_activeNavy.Count > 0)
             {
-                _navyParents[i] = _activeNavy[i];
+                for (int i = 0; i < navyParentSize; i++)
+                {
+                    _navyParents[i] = _activeNavy[0];
+                }
+
+                lastNavyWinner = _activeNavy[0];
+                lastNavyWinner.name += "Gen-" + generationCount;
+                lastNavyWinnerData = lastNavyWinner.GetData();
+                PrefabUtility.SaveAsPrefabAsset(lastNavyWinner.gameObject, savePrefabsAt + lastNavyWinner.name + ".prefab");
+
+                winnerMessage += $"Last winner navy had: {lastNavyWinner.GetPoints()} points!";
+                SetDocumentation("NavyInfo", lastNavyWinner.name, lastNavyWinner.GetInfoString());
             }
-
-            lastNavyWinner = _activeNavy[0];
-            lastNavyWinner.name += "Gen-" + generationCount;
-            lastNavyWinnerData = lastNavyWinner.GetData();
-            PrefabUtility.SaveAsPrefabAsset(lastNavyWinner.gameObject, savePrefabsAt + lastNavyWinner.name + ".prefab");
-
-            winnerMessage += $"Last winner navy had: {lastNavyWinner.GetPoints()} points";
         }
 
         if (winnerMessage != "")
