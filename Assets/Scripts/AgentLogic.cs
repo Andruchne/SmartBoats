@@ -63,10 +63,13 @@ public struct AgentData
     public float checkpointDistanceFactor;
     public float pointsWeight;
 
+    // For variation 2 of the environment...
+    public bool searchForCheckpoint;
+
     public AgentData(int steps, int rayRadius, float sight, float movingSpeed, Vector2 randomDirectionValue, float boxWeight,
         float distanceFactor, float boatWeight, float boatDistanceFactor, float enemyWeight, float enemyDistanceFactor,
         float navyWeight, float navyDistanceFactor, Vector3 checkpoint, float checkpointWeight, float checkpointDistanceFactor,
-        float pointsWeight)
+        float pointsWeight, bool searchForCheckpoint)
     {
         this.steps = steps;
         this.rayRadius = rayRadius;
@@ -86,6 +89,8 @@ public struct AgentData
         this.checkpointWeight = checkpointWeight;
         this.checkpointDistanceFactor = checkpointDistanceFactor;
         this.pointsWeight = pointsWeight;
+
+        this.searchForCheckpoint = searchForCheckpoint;
     }
 }
 
@@ -106,6 +111,10 @@ public class AgentLogic : MonoBehaviour, IComparable
     protected float pointsGathered;
     [SerializeField]
     protected float pointsSaved;
+
+    // This bool allows for agents to be compared with gathered points, instead of saved points
+    // In case no actor is able to save any points, the one with the most gathered ones will win
+    public bool pittyPoints;
 
     private bool _isAwake;
 
@@ -147,6 +156,13 @@ public class AgentLogic : MonoBehaviour, IComparable
     private float checkpointDistanceFactor;
     [SerializeField]
     private float pointsWeight;
+
+    // For variation 2 of the environment...
+    [Space(10)]
+    [SerializeField]
+    protected bool capCheckpointAccess;
+    [SerializeField]
+    protected int minPointsAmount;
 
     [Space(10)]
     [Header("Debug & Help")] 
@@ -343,19 +359,23 @@ public class AgentLogic : MonoBehaviour, IComparable
         //Adds an extra direction for the front view with a extra range.
         //directions.Add(CalculateAgentDirection(selfPosition, forward, 1.5f));
 
-        //Add the checkpoint to the directions for continuous check.
-        Vector3 checkpointDirection = checkpoint - selfTransform.position;
-
-        float lerpParam = Mathf.InverseLerp(300, 0, checkpointDirection.magnitude);
-        float distanceIndex = Mathf.Lerp(0.1f, 1, lerpParam);
-
-        float checkpointUtility = (distanceIndex * checkpointDistanceFactor + checkpointWeight) * (pointsGathered * pointsWeight);
-
-        if (checkpointUtility > 0)
+        if (!capCheckpointAccess || (capCheckpointAccess && pointsGathered >= minPointsAmount))
         {
-            AgentDirection checkpointAgentDir = new AgentDirection(checkpointDirection.normalized, checkpointDistanceFactor);
-            checkpointAgentDir.utility = checkpointUtility;
-            directions.Add(checkpointAgentDir);
+            //Add the checkpoint to the directions for continuous check.
+            Vector3 checkpointDirection = checkpoint - selfTransform.position;
+
+            float lerpParam = Mathf.InverseLerp(300, 0, checkpointDirection.magnitude);
+            float distanceIndex = Mathf.Lerp(0.1f, 1, lerpParam);
+
+            float checkpointUtility = (distanceIndex * checkpointDistanceFactor + checkpointWeight) * (pointsGathered * pointsWeight);
+
+            // Check if you have no need for the checkpoint (mainly for navy)
+            if (checkpointUtility > 0)
+            {
+                AgentDirection checkpointAgentDir = new AgentDirection(checkpointDirection.normalized, checkpointDistanceFactor);
+                checkpointAgentDir.utility = checkpointUtility;
+                directions.Add(checkpointAgentDir);
+            }
         }
 
         directions.Sort();
@@ -372,9 +392,8 @@ public class AgentLogic : MonoBehaviour, IComparable
         }
 
         AgentDirection highestAgentDirection = directions[directionChoice];
-        //if (show) Debug.Log(directions[0].utility);
         
-        //Rotate towards to direction. The factor of 0.1 helps to create a "rotation" animation instead of automatically rotates towards the target. 
+        //Rotate towards direction. The factor of 0.1 helps to create a "rotation" animation instead of automatically rotates towards the target. 
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(highestAgentDirection.Direction), 0.1f);
         
         //Sets the velocity using the chosen direction
@@ -418,8 +437,10 @@ public class AgentLogic : MonoBehaviour, IComparable
             //Thus, closer objects will have a higher value.
             float distanceIndex = 1.0f - distanceNormalized;
 
+            string tag = raycastHit.collider.gameObject.tag;
+
             //Calculate the utility of the found object according to its type.
-            switch (raycastHit.collider.gameObject.tag)
+            switch (tag)
             {
                 //All formulas are the same. Only the weights change.
                 case "Box":
@@ -442,6 +463,7 @@ public class AgentLogic : MonoBehaviour, IComparable
     {
         string info = "";
 
+        if (pointsSaved == 0) { info += "Pitty Points" + "\n"; }
         info += "Final Points: " + pointsSaved + "\n\n";
         info += "Steps: " + steps + "\n";
         info += "Ray Radius: " + rayRadius + "\n";
@@ -484,6 +506,8 @@ public class AgentLogic : MonoBehaviour, IComparable
 
     public float GetPoints()
     {
+        if (pittyPoints) { return pointsGathered; }
+
         return pointsSaved;
     }
     
@@ -516,6 +540,6 @@ public class AgentLogic : MonoBehaviour, IComparable
         return new AgentData(steps, rayRadius, sight, movingSpeed, randomDirectionValue, boxWeight,
             distanceFactor, boatWeight, boatDistanceFactor, enemyWeight,  enemyDistanceFactor, 
             navyWeight, navyDistanceFactor, checkpoint, checkpointWeight, checkpointDistanceFactor,
-            pointsWeight);
+            pointsWeight, capCheckpointAccess);
     }
 }

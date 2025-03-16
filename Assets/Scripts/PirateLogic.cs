@@ -16,7 +16,8 @@ public class PirateLogic : AgentLogic
             pointsGathered += _boxPoints;
             Destroy(other.gameObject);
         }
-        else if (other.gameObject.tag.Equals("PiratePoint"))
+        else if ((other.gameObject.tag.Equals("PiratePoint") && !capCheckpointAccess) || 
+            (capCheckpointAccess && pointsGathered >= minPointsAmount))
         {
             // Checkpoint reached...
             pointsSaved += pointsGathered;

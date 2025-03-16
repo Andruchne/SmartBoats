@@ -123,6 +123,50 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &18636203
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 18636205}
+  - component: {fileID: 18636204}
+  m_Layer: 0
+  m_Name: SpeedMultiplier
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &18636204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 18636203}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5de840c4df5c1a419708c8efd3104c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speedMultiplier: 1
+--- !u!4 &18636205
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 18636203}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -129.88243, y: 259.18817, z: -326.80777}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 10
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &227103212
 GameObject:
   m_ObjectHideFlags: 0
@@ -186,7 +230,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameObjectToBeCreated:
-  - {fileID: 3524723314095339988, guid: 1ef8c4222b9e710478296b6397fc40ae, type: 3}
+  - {fileID: 1431868510118096652, guid: e5ebe6a4825b4d546aca9611832fb67c, type: 3}
   count: 8
   randomRotationMinimal: {x: 0, y: -89, z: 0}
   randomRotationMaximal: {x: 0, y: 90, z: 0}
@@ -566,7 +610,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameObjectToBeCreated:
-  - {fileID: 6463179501507364196, guid: 4a54051ac8638314d9199244afb99e8e, type: 3}
+  - {fileID: 1084636804299922303, guid: 6b60372bab935034eb40bc6a99956801, type: 3}
   count: 15
   randomRotationMinimal: {x: 0, y: -89, z: 0}
   randomRotationMaximal: {x: 0, y: 90, z: 0}
@@ -1162,9 +1206,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4eb255d7b507b4ed0a734bbe57b0dfbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  evolveBoat: 0
-  evolvePirate: 0
-  evolveNavy: 0
+  evolveBoat: 1
+  evolvePirate: 1
+  evolveNavy: 1
   boxGenerators:
   - {fileID: 1204097874}
   boatGenerator: {fileID: 1829776929}
@@ -1198,6 +1242,7 @@ MonoBehaviour:
     checkpointWeight: 0
     checkpointDistanceFactor: 0
     pointsWeight: 0
+    searchForCheckpoint: 0
   lastPirateWinnerData:
     steps: 0
     rayRadius: 0
@@ -1216,6 +1261,7 @@ MonoBehaviour:
     checkpointWeight: 0
     checkpointDistanceFactor: 0
     pointsWeight: 0
+    searchForCheckpoint: 0
   lastNavyWinnerData:
     steps: 0
     rayRadius: 0
@@ -1234,6 +1280,7 @@ MonoBehaviour:
     checkpointWeight: 0
     checkpointDistanceFactor: 0
     pointsWeight: 0
+    searchForCheckpoint: 0
 --- !u!4 &1448668717
 Transform:
   m_ObjectHideFlags: 0
@@ -1311,7 +1358,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameObjectToBeCreated:
-  - {fileID: 1730806717114718523, guid: 17513969d50b02b48855d73f68d39f68, type: 3}
+  - {fileID: 3619678039083153150, guid: a8e2427af039c1a4288594254c95a630, type: 3}
   count: 30
   randomRotationMinimal: {x: 0, y: -89, z: 0}
   randomRotationMaximal: {x: 0, y: 90, z: 0}

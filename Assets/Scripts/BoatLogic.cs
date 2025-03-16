@@ -8,7 +8,7 @@ public class BoatLogic : AgentLogic
     private static float _boxPoints = 2.0f;
     private static float _piratePoints = -100.0f;
     #endregion
-    
+
     private void OnTriggerEnter(Collider other)
     {
         if(other.gameObject.tag.Equals("Box"))
@@ -16,7 +16,8 @@ public class BoatLogic : AgentLogic
             pointsGathered += _boxPoints;
             Destroy(other.gameObject);
         }
-        else if(other.gameObject.tag.Equals("BoatPoint"))
+        else if((other.gameObject.tag.Equals("BoatPoint") && !capCheckpointAccess) ||
+            (capCheckpointAccess && pointsGathered >= minPointsAmount))
         {
             // Checkpoint reached...
             pointsSaved += pointsGathered;

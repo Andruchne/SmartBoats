@@ -427,6 +427,7 @@ MonoBehaviour:
   show: 0
   pointsGathered: 0
   pointsSaved: 0
+  pittyPoints: 0
   steps: 0
   rayRadius: 16
   sight: 30
@@ -444,6 +445,8 @@ MonoBehaviour:
   checkpointWeight: 0
   checkpointDistanceFactor: 0
   pointsWeight: 0
+  capCheckpointAccess: 1
+  minPointsAmount: 10
   visionColor: {r: 0.08597367, g: 0.21904607, b: 0.7924528, a: 1}
   foundColor: {r: 0, g: 0, b: 0, a: 1}
   directionColor: {r: 1, g: 1, b: 1, a: 1}

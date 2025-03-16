@@ -266,6 +266,23 @@ public class GenerationManager : MonoBehaviour
         {
             //Fetch parents
             _activeBoats.RemoveAll(item => item == null);
+
+            bool foundWinner = false;
+            // Check if any of the actors in the list has saved points
+            for (int i = 0; i < _activeBoats.Count; i++)
+            {
+                if (_activeBoats[i].GetPoints() > 0) { foundWinner = true; }
+            }
+
+            // If not, set pittyPoints to true, making gatheredPoints be compared instead
+            if (!foundWinner)
+            {
+                for (int i = 0; i < _activeBoats.Count; i++)
+                {
+                    _activeBoats[i].pittyPoints = true;
+                }
+            }
+
             _activeBoats.Sort();
 
             if (_activeBoats.Count > 0)
@@ -289,6 +306,23 @@ public class GenerationManager : MonoBehaviour
         if (evolvePirate)
         {
             _activePirates.RemoveAll(item => item == null);
+
+            bool foundWinner = false;
+            // Check if any of the actors in the list has saved points
+            for (int i = 0; i < _activePirates.Count; i++)
+            {
+                if (_activePirates[i].GetPoints() > 0) { foundWinner = true; }
+            }
+
+            // If not, set pittyPoints to true, making gatheredPoints be compared instead
+            if (!foundWinner)
+            {
+                for (int i = 0; i < _activePirates.Count; i++)
+                {
+                    _activePirates[i].pittyPoints = true;
+                }
+            }
+
             _activePirates.Sort();
             _pirateParents = new PirateLogic[pirateParentSize];
             if (_activePirates.Count > 0)
@@ -310,6 +344,9 @@ public class GenerationManager : MonoBehaviour
         if (evolveNavy)
         {
             _activeNavy.RemoveAll(item => item == null);
+
+            // No need to do the check for a winner here, since points are always counted as "saved"
+
             _activeNavy.Sort();
             _navyParents = new NavyLogic[navyParentSize];
             if (_activeNavy.Count > 0)
